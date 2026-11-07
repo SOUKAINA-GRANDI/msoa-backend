@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 from .database import get_db
 from .models import Payment
@@ -29,5 +29,6 @@ def by_order(order_id: str, db: Session = Depends(get_db)):
                         503: {"description": "Provider or Orders unavailable"}})
 
 
-def create(data: PaymentRequest, db: Session = Depends(get_db)):
-    return service.process_payment(db, gateway, orders, data.orderId, data.method)
+def create(data: PaymentRequest, db: Session = Depends(get_db),authorization: str | None = Header(None)):
+    # Le token de l'utilisateur est transmis tel quel à Orders (s'il existe)
+    return service.process_payment(db, gateway, orders, data.orderId, data.method, authorization)

@@ -6,12 +6,15 @@ from app import routes
 from app.clients.orders_client import OrderView
 
 class FakeOrders:
-    def __init__(self): self.order = OrderView("o1", 100.0, "PENDING_PAYMENT"); self.paid = False; self.fail_update = False
-    def get_order(self, oid): return self.order if oid == "o1" else None
-    def mark_paid(self, oid):
+    def __init__(self): self.seen_auth = []; self.order = OrderView("o1", 100.0, "PENDING_PAYMENT"); self.paid = False; self.fail_update = False
+    def get_order(self, oid, auth=None):
+        self.seen_auth.append(auth)
+        return self.order if oid == "o1" else None
+    def mark_paid(self, oid, auth=None):
+        self.seen_auth.append(auth)
         if self.fail_update: raise HTTPException(503, "Could not update order status.")
         self.paid = True; self.order.status = "PAID"
-
+        
 @pytest.fixture
 def client(monkeypatch):
     fake = FakeOrders()
@@ -63,3 +66,14 @@ def test_missing_order_id(client):
 def test_health(client):
     c, _ = client
     assert c.get("/health").json()["status"] == "UP"
+
+def test_token_forwarded_to_orders(client):
+    c, fake = client
+    r = c.post("/api/payments", json={"orderId": "o1"}, headers={"Authorization": "Bearer abc"})
+    assert r.status_code == 201
+    assert fake.seen_auth == ["Bearer abc", "Bearer abc"]
+
+def test_works_without_token(client):
+    c, fake = client
+    assert c.post("/api/payments", json={"orderId": "o1"}).status_code == 201
+    assert fake.seen_auth == [None, None]

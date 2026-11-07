@@ -3,8 +3,8 @@ from fastapi import HTTPException
 from .models import Payment
 from .gateway.base import GatewayTimeout
 
-def process_payment(db, gateway, orders, order_id: str, method: str):
-    order = orders.get_order(order_id)
+def process_payment(db, gateway, orders, order_id: str, method: str , auth: str | None = None):
+    order = orders.get_order(order_id ,auth )
     if order is None:
         raise HTTPException(404, "Order not found.")
     if order.status != "PENDING_PAYMENT":
@@ -32,7 +32,7 @@ def process_payment(db, gateway, orders, order_id: str, method: str):
     p.status = "SUCCESS"; db.commit()
 
     try:
-        orders.mark_paid(order_id)
+        orders.mark_paid(order_id , auth)
     except HTTPException:
         # Compensation : on a encaissé mais Orders n'est pas à jour
         gateway.refund(p.gateway_ref, p.amount)

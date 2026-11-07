@@ -59,6 +59,7 @@ Payments calls the Orders service (`ORDERS_URL`, default `http://localhost:8084`
 
 If the `PATCH` fails after a charge, the payment is refunded automatically (status `REFUNDED`) and the service answers 503.
 
+
 ## Test scenarios (simulated payment provider)
 
 | `method` | Result |

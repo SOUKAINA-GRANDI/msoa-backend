@@ -44,6 +44,7 @@ Valeurs de `status` : `SUCCESS`, `FAILED`, `REFUNDED`, `PENDING`.
 ### Dépendance : Payments appelle Orders (`ORDERS_URL`, défaut `http://localhost:8084`)
 - `GET /api/orders/{id}` doit renvoyer au minimum `{ "id", "total" (nombre), "status": "PENDING_PAYMENT" }`, et 404 si la commande n'existe pas.
 - `PATCH /api/orders/{id}/status` avec `{ "status": "PAID" }`, accepté depuis `PENDING_PAYMENT`, répond 200.
+- Si la requête contient `Authorization: Bearer <token>`, Payments le transmet tel quel à Orders (GET et PATCH). Sans token, aucun en-tête n'est envoyé. Un 401/403 d'Orders est renvoyé tel quel.
 
 ### Cas de test
 `method` = `TEST_DECLINE` (402), `TEST_TIMEOUT` (503) ; total > 50000 refusé (402).
