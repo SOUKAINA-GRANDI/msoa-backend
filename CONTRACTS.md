@@ -2,17 +2,17 @@
 
 Dossier : `payments-service` | Base URL : `http://localhost:8085` (Docker : `http://payments:8085`)
 Docs : `http://localhost:8085/docs` | OpenAPI : `payments-service/payment-openapi.json`
-Statut : tous les endpoints sont implémentés et testés (9 tests automatiques + tests manuels Swagger).
+Statut : tous les endpoints sont implémentés et testés (11 tests automatiques + tests manuels Swagger).
 
 ### POST /api/payments
-Requête : `{ "orderId": "uuid", "method": "CARD" }` (`method` = `CARD` ou `CASH`, défaut `CARD`).
-Le montant n'est pas envoyé : Payments lit `total` chez Orders.
+Requête : `{ "orderId": "order-demo-001", "method": "CARD" }` (`method` = `CARD` ou `CASH`, défaut `CARD`).
+`orderId` est une chaîne (pas forcément un UUID). Le montant n'est pas envoyé : Payments lit `total` chez Orders.
 
 Réponse 201 :
 ```json
 {
   "id": "uuid",
-  "orderId": "uuid",
+  "orderId": "order-demo-001",
   "amount": 250.0,
   "method": "CARD",
   "status": "SUCCESS",
@@ -27,6 +27,7 @@ Erreurs, au format `{ "message": "...", "detail": "..." }` :
 | 404 | Order not found. |
 | 409 | Order is not awaiting payment. / Payment already attempted for this order. |
 | 402 | Payment declined: `<raison>` |
+| 401 / 403 | Not authorized to access this order. (renvoyé quand Orders refuse le token) |
 | 503 | Orders service unavailable. / Orders service error. / Could not update order status. / Payment provider unavailable. |
 | 422 | Body invalide (`orderId` manquant) |
 
